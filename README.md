@@ -1,4 +1,4 @@
-sudo useradd -s /bin/bash -m libz
+sudo useradd -s /bin/bash -m libzz
 
 git config --global user.name "libzz"
 
