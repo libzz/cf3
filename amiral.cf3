@@ -1,0 +1,113 @@
+#!/var/cfengine/bin/cf-promises -f
+body common control
+{
+    bundlesequence => { "amiral"};
+    inputs          => {
+        "$(sys.workdir)/inputs/cfengine_stdlib.cf",
+    };
+}
+
+
+bundle agent amiral
+{
+vars:
+any::
+	"builddir" string => "/home/amiral/build";
+debian::
+	"amiral_packages_dependencies" slist => { 
+	 "python-twisted",
+	 "python-pyopenssl",
+	 "python-pgsql",
+	 "python-subversion",
+	 "python-cheetah",
+	 "postgresql-plpython-8.4"
+	};
+	
+classes:
+	"ctx_amiral_user_present"
+		expression => regline("^amiral:x:\d*:\d*::/home/amiral:/bin/bash","/etc/passwd"),
+		comment => "Determine if the amiral user is correctly set";	
+
+
+
+
+packages:
+	any::
+      "$(amiral_packages_dependencies)"
+		 handle => "amiral_packages_dependencies",
+		 comment => "install needed dependencies for amiral to run",
+	     package_policy => "addupdate",
+	     package_method => generic,
+		 classes => if_repaired("ctx_packages_added");
+		 
+		 
+		 
+files:
+ "/home/amiral/build/."
+	create => "true",
+	classes => if_ok("ctx_builddir_exists");
+	
+		 
+commands:
+	"/usr/sbin/adduser --quiet --system --group --home /home/amiral --shell /bin/bash amiral"
+		handle => "create_amiral_in_shell",
+		ifvarclass => "!ctx_amiral_user_present";
+		
+#	"/tmp/amiral-project.tgz"
+#		transformer => deflate_to_dir("$this.builddir"),
+#		depends_on => "" ;
+
+}
+bundle agent install_database
+{
+classes:
+	"ctx_please_create_amiral_cluster"
+		expression => returnszero("/usr/bin/pg_lsclusters | /bin/grep --silent -P '^8.4\s+amiral\s+5433\s+(online|offline)\s+amiral\s+/home/amiral/postgresql\s+/var/log/postgresql/postgresql-8.4-amiral.log' ", "useshell"),
+		comment => "Determine if the amiral pg cluster is correctly set (can be offline)";
+	
+# Database
+packages:
+	any::
+      "postgresql-8.4"
+		 handle => "package_database_engine",
+		 comment => "install postgres for Amiral",
+	     package_policy => "addupdate",
+	     package_method => generic;
+		 
+	
+commands:
+	"pg_createcluster -u amiral -g amiral -d /home/amiral/postgresql -p 5433 --start 8.4 amiral"
+		ifvarclass => "ctx_please_create_amiral_cluster",
+		classes => if_repaired(ctx_amiral_cluster_created);
+	
+	"/usr/bin/createuser -p5433 -h /tmp ccsd"
+		ifvarclass => "ctx_amiral_cluster_created",
+		classes => if_repaired("ctx_pg_amiral_user_created");
+
+	"/usr/bin/createdb -p5433 -h /tmp -O ccsd ccsd"
+		ifvarclass => "ctx_amiral_cluster_created",
+		classes => if_repaired("ctx_pg_amiral_db_ccsd_created");
+		
+	"psql -p5433 -h /tmp ccsd < ./build/usr/share/ccsd/dbschema/ccs.schema"
+		ifvarclass => "ctx_install_initial_database_feed";
+
+
+vars:
+
+  "pg_conf[port]" string => "5433";
+  "pg_conf[unix_socket_directory]" string => "'/tmp'";
+	
+
+
+files:
+	"/etc/postgresql/8.4/amiral/pg_hba.conf"
+		edit_line => append_if_no_line("host    ccsd        ccsd      127.0.0.1/32          md5"),
+		edit_line => append_if_no_line("local   all         amiral                            ident");
+
+	"/etc/postgresql/8.4/amiral/postgresql.conf"
+		handle => "edit_pgconf_amiral_cluster",
+		edit_line => maintain_key_values("pg_conf", " = ");
+		
+		
+
+}
