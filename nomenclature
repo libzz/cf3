@@ -1,0 +1,71 @@
+context_generalSubjectHeading_specialInstance service oriented
+    * app_mail_postfix
+    * app_mail_mailman
+    * app_mail_imap
+    * app_web_apache
+    * app_web_squid
+    * app_web_php
+    * app_svn_hooks
+    * app_svn_headers
+    * app_versioning_svn
+    * app_db_mysql
+    * garbage_collection
+    * security_check_files
+    * security_check_processes
+    * system_name_resolution
+    * system_xinetd
+    * system_root_password
+    * system_processes
+    * system_files
+    * win_active_directory
+    * win_registry
+    * win_services 
+    * promise_app_web_cf_55
+    * promise_app_mail_cf_70
+    * promise_change_cf_71
+    * promise_site_cf_77
+    * app_db_forum
+    * perl_env
+    * python_env
+    * c_cpp_env
+    * ensure_ownership
+    * nginx_perlcgi
+    * nginx_phpcgi
+    * db_mysql
+    * db_sqlite
+
+Host | promise handle | report | Occurrences
+Type | service bundle name | contributing to goals (goal_1, goal_2, goal_3)
+host | policy | kept | repaired | not kept | last seen
+
+Essential Files          Description
+'promises.cf'            Main configuration file.
+'update.cf'              Update configuration.
+'failsafe.cf'            Falisafe configuration.
+'cfengine stdlib.cf'     Cfengine standard library.
+Maintenance examples     Description
+'change mgt.cf'          Implement security tripwire on files/directories.
+'ensure ownership.cf'    Home directory ownership and permission maintenance.
+'fix broken software.cf' Package installation and permission correction.
+'garbage collection.cf'  Log rotation and removal.
+'harden xinetd.cf'       Disable xinetd services specified.
+'iptables.cf'            Secure system with sysctl.conf and iptables.
+'name resolution.cf'     Edit /etc/resolv.conf to the specified DNS servers
+System setup examples    Description
+'c cpp env.cf'           Set up C programming environment.
+'db mysql.cf'            Install and run MySQL
+'db postgresql.cf'       Install and run PostgreSQL
+'db sqllite.cf'          Install and run SQLlite
+'jboss server.cf'        Prepare JAVA environment and run JBOSS.
+'nagios.cf'              Setup NAGIOS monitoring node.
+'nginx perlcgi.cf'       Setup NGINX webserver perlCGI.
+'nginx phpcgi.cf'        Setup NGINX webserver phpCGI.
+'ntp.cf'                 Setup NTP server and clients.
+'perl env.cf'            PERL programming language install.
+'php webserver.cf'       Setup a PHP webserver.
+'python env.cf'          PYTHON programming install.
+'ruby env.cf'            Setup ruby on rails environment.
+'sshd conf.cf'           Ensure sshd config is correct.
+'tomcat server.cf'       Setup a tomcat server.
+'varnish.cf'             Set up Varnish web accelerator
+
