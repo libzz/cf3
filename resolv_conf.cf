@@ -1,0 +1,30 @@
+bundle agent resolv_conf {
+ vars:
+"domain" string => "normation.com";
+
+ files:
+"/etc/resolv.conf"
+edit_line => key_value_replace_all_lines("search", " ", "$(domain)"),
+classes => if_repaired("edited_resolv_conf");
+
+ reports:
+edited_resolv_conf::
+"Set the search domain $(domain) in /etc/resolv.conf";
+}
+
+
+# This bundle is designed for use with files that contain key/value pairs
+# To use it call it with these parameters:
+# - key: name of the key to set
+# - sep: the key/value separator (eg, " " or "=")
+# - value: the value to set
+# This bundle deletes all existing lines beginning with the key+sep pair
+# then adds just the one line with the value we want
+
+bundle edit_line key_value_replace_all_lines(key, sep, value) {
+ delete_lines:
+"^$(key)$(sep).*";
+
+ insert_lines:
+"$(key)$(sep)$(value)";
+}
